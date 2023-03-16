@@ -1,8 +1,7 @@
-
 use rand::Rng;
 extern crate sdl2;
 
-
+use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
@@ -25,8 +24,9 @@ fn internal_detection(i: i32, j: i32, a: i32, b:i32, c:i32, d:i32) -> i32 {
 
 
 }
-fn multiply_by_a_matrix(a: usize, b:usize, c:usize, d:usize, x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, mut alpha: f32, gamma: f32 ) -> Vec<Vec<f32>> {
-    let mut tmp = 0.0;
+fn multiply_by_a_matrix( x: &mut Vec<Vec<f32>>,domain: &mut
+Vec<Vec<i32>>, alpha: f32, gamma: f32 ) -> Vec<Vec<f32>> {
+    let mut tmp:f32;
     let mut result = vec![vec![0.0; x[0].len()]; x.len()];
     for i in 1..x.len()-1{
         for j in 1..x[0].len()-1{
@@ -37,35 +37,36 @@ fn multiply_by_a_matrix(a: usize, b:usize, c:usize, d:usize, x: &mut Vec<Vec<f32
                 }else{
                     tmp = tmp + (1.0+4.0*alpha+alpha*gamma)*x[i][j];
                 }
-                
+
                 if domain[i][j+1] != -1{
-                    tmp = tmp - alpha*x[i][j+1]; 
+                    tmp = tmp - alpha*x[i][j+1];
                 }else{
-                    tmp = tmp - alpha*x[i][j-1]; 
+                    tmp = tmp - alpha*x[i][j-1];
                 }
                 if domain[i][j-1] != -1{
-                    tmp = tmp - alpha*x[i][j-1]; 
+                    tmp = tmp - alpha*x[i][j-1];
                 }else{
-                    tmp = tmp - alpha*x[i][j+1]; 
+                    tmp = tmp - alpha*x[i][j+1];
                 }
                 if domain[i-1][j] != -1{
-                    tmp = tmp - alpha*x[i-1][j]; 
+                    tmp = tmp - alpha*x[i-1][j];
                 }else{
-                    tmp = tmp - alpha*x[i+1][j]; 
+                    tmp = tmp - alpha*x[i+1][j];
                 }
                 if domain[i+1][j] != -1{
-                    tmp = tmp - alpha*x[i+1][j]; 
+                    tmp = tmp - alpha*x[i+1][j];
                 }else{
-                    tmp = tmp - alpha*x[i-1][j]; 
+                    tmp = tmp - alpha*x[i-1][j];
                 }
             }
             result[i][j] = tmp;
         }
-        
+
     }
     return result;
 }
-fn compute_b (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c: &mut Vec<f32>, gamma: f32 ) -> Vec<Vec<f32>>{
+fn compute_b (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c:
+&mut Vec<f32>, gamma: f32 ) -> Vec<Vec<f32>>{
     let mut result = vec![vec![0.0; u[0].len()]; u.len()];
     for i in 0..u.len(){
         for j in 0..u[0].len(){
@@ -84,7 +85,8 @@ fn compute_b (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c: &mut Vec<f32>
     }
     return result;
 }
-fn subtrac_vec (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, y: &mut Vec<Vec<f32>>)-> Vec<Vec<f32>>{// x - y
+fn subtrac_vec (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, y:
+&mut Vec<Vec<f32>>)-> Vec<Vec<f32>>{// x - y
     let mut result = vec![vec![0.0; x[0].len()]; x.len()];
     for i in 0..x.len(){
         for j in 0..x[0].len(){
@@ -95,7 +97,8 @@ fn subtrac_vec (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, y: &mut Vec<Ve
     }
     return result;
 }
-fn multiply_by_scalar_vec (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, y: f32)-> Vec<Vec<f32>>{// x*y
+fn multiply_by_scalar_vec (x: &mut Vec<Vec<f32>>,domain: &mut
+Vec<Vec<i32>>, y: f32)-> Vec<Vec<f32>>{// x*y
     let mut result = vec![vec![0.0; x[0].len()]; x.len()];
     for i in 0..x.len(){
         for j in 0..x[0].len(){
@@ -106,7 +109,8 @@ fn multiply_by_scalar_vec (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, y: 
     }
     return result;
 }
-fn scalar_product (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>,y: &mut Vec<Vec<f32>>)-> f32{
+fn scalar_product (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>,y:
+&mut Vec<Vec<f32>>)-> f32{
     let mut result: f32 = 0.0;
     for i in 0..x.len(){
         for j in 0..x[0].len(){
@@ -117,7 +121,8 @@ fn scalar_product (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>,y: &mut Vec<
     }
     return result;
 }
-fn scalar_product_itself (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>)-> f32{
+fn scalar_product_itself (x: &mut Vec<Vec<f32>>,domain: &mut
+Vec<Vec<i32>>)-> f32{
     let mut result: f32 = 0.0;
     for i in 0..x.len(){
         for j in 0..x[0].len(){
@@ -131,26 +136,31 @@ fn scalar_product_itself (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>)-> f3
 fn pretty_print_vec( x: &mut Vec<Vec<f32>>) {
     for i in 0..x.len(){
         println!("{:.1?}",x[i]);
-    } 
+    }
 }
 
 fn pretty_print_int( x: &mut Vec<Vec<i32>>) {
     for i in 0..x.len(){
         println!("{:?}",x[i]);
-    } 
+    }
 }
 fn force_copy(x: &mut Vec<Vec<f32>> ) -> Vec<Vec<f32>> {
     let mut result = vec![vec![0.0; x[0].len()]; x.len()];
         for i in 0..x.len(){
         for j in 0..x[0].len(){
-            
+
                 result[i][j] = x[i][j];
-            
+
         }
     }
     return result;
 }
 fn main()-> Result<(), String> {
+    let diffusivity = 10.0;
+    let h = 1.0;
+    let beta = 100.0;
+    let dt = 0.10;
+
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
 
@@ -162,14 +172,11 @@ fn main()-> Result<(), String> {
         .map_err(|e| e.to_string())?;
 
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
+    let mut event_pump = sdl_context.event_pump()?;
 
     canvas.set_draw_color(Color::RGB(0, 0, 0));
-    canvas.fill_rect(Rect::new(0, 0, 800, 600));
-    canvas.set_draw_color(Color::RGB(255, 210, 0));
 
-    canvas.fill_rect(Rect::new(100, 100, 10, 50));
 
-   
     canvas.present();
 
 
@@ -186,30 +193,33 @@ fn main()-> Result<(), String> {
 
     let mut domain_spec= vec![vec![-1; C+2]; A+2];
     let mut rng = rand::thread_rng();
-    
+
     let mut u= vec![vec![1.1; C+2]; A+2];
-    let mut ax = vec![vec![0.0; C+2]; A+2];
-    let mut r = vec![vec![0.0; C+2]; A+2];
-    let mut b = vec![vec![0.0; C+2]; A+2];
-    let mut z = vec![vec![0.0; C+2]; A+2];
-    let mut p = vec![vec![0.0; C+2]; A+2];
-    let mut tmp = vec![vec![0.0; C+2]; A+2];
-    let mut gamma_sim_par = 2.0;
-    let mut alpha_sim_par = 1.0;
-    let mut delta_solve = 0.0;
-    let mut alpha_solve = 0.0;
-    let mut beta_solve = 0.0;
-    let mut gamma_solve = 0.0;
+    let mut ax :Vec<Vec<f32>>;
+    let mut r :Vec<Vec<f32>>;
+    let mut b :Vec<Vec<f32>>;
+    let mut z :Vec<Vec<f32>>;
+    let mut p :Vec<Vec<f32>>;
+    let mut tmp :Vec<Vec<f32>>;
+    let gamma_sim_par = 2.0*h*beta/diffusivity;
+    let alpha_sim_par = diffusivity*dt/(h*h);
+    let mut delta_solve:f32;
+    let mut alpha_solve:f32;
+    let mut beta_solve :f32;
+    let mut gamma_solve:f32;
 
     for i in 0..A{
         for j in 0..C{
-            domain_spec[i+1][j+1] = internal_detection(i.try_into().unwrap(), j.try_into().unwrap(), a_int,b_int,c_int,d_int);
-            u[i+1][j+1] = rng.gen::<f32>()*10.1;
+            domain_spec[i+1][j+1] =
+internal_detection(i.try_into().unwrap(), j.try_into().unwrap(),
+a_int,b_int,c_int,d_int);
+            u[i+1][j+1] = rng.gen::<f32>()*50.1;
         }
        // println!("{:?}",domain_spec[i]);
     }
     pretty_print_int(&mut domain_spec );
-    ax = multiply_by_a_matrix(A,B,C,D,&mut u,&mut domain_spec,alpha_sim_par,gamma_sim_par);
+    ax = multiply_by_a_matrix(&mut u,&mut
+domain_spec,alpha_sim_par,gamma_sim_par);
    // pretty_print_vec(&mut ax);
    // println!("-------------------\n");
     b = compute_b(&mut u, &mut domain_spec, &mut control_array,gamma_sim_par);
@@ -218,68 +228,82 @@ fn main()-> Result<(), String> {
    // pretty_print_vec(&mut p);
     println!("-------------------\n");
     delta_solve = scalar_product_itself(&mut r, &mut domain_spec );
-    let mut gamma_zero = delta_solve;
+    let gamma_zero = delta_solve;
 
     pretty_print_vec(&mut b);
-    for k in 0..100{
+    'running: for k in 0..100{
         let ten_millis = time::Duration::from_millis(100);
-        std::thread::sleep(ten_millis);
+        //std::thread::sleep(ten_millis);
         canvas.set_draw_color(Color::RGB(0,0,0));
         canvas.present();
         canvas.clear();
       // canvas.set_draw_color(Color::RGB(0,0,0));
 
        // canvas.fill_rect(Rect::new(0, 0, 800, 600));
-        for i in 0..u.len(){
-            
+       for event in event_pump.poll_iter() {
+        match event {
+            Event::Quit { .. }
+            | Event::KeyDown {
+                keycode: Some(Keycode::Escape),
+                ..
+            } => break 'running,
+            _ => {}
+        }}
+       for i in 0..u.len(){
 
 
-           
+
+
             for j in 0..u[0].len(){
-             
+
                 if domain_spec[i][j]!=-1{
-                    
+
                     let grayscale = u[i][j] as u8;
                    //println!("{}", 2*(i as i32));
-                    canvas.set_draw_color(Color::RGB(grayscale*2, 10, 0));
-                    canvas.fill_rect(Rect::new(2*(i as i32), 2*(j as i32), 2, 2));
-                   
+                    canvas.set_draw_color(Color::RGB(2*grayscale,
+2*grayscale, 2*grayscale));
+                    canvas.fill_rect(Rect::new(2*(i as i32), 2*(j as
+i32), 2, 2));
+
                 }
-                
+
             }
-            
+
         }
-        for n in 0..10{
-            z = multiply_by_a_matrix(A,B,C,D,&mut p,&mut domain_spec,alpha_sim_par,gamma_sim_par);
+        for _n in 0..10{
+            z = multiply_by_a_matrix(&mut p,&mut domain_spec,alpha_sim_par,gamma_sim_par);
             //pretty_print_vec(&mut z);
-            alpha_solve = -delta_solve/scalar_product(&mut p, &mut domain_spec, &mut z);
+            alpha_solve = -delta_solve/scalar_product(&mut p, &mutdomain_spec, &mut z);
             //println!("{}", delta_solve);
             tmp = multiply_by_scalar_vec(&mut p, &mut domain_spec, alpha_solve);
             //pretty_print_vec(&mut tmp);
             u = subtrac_vec(&mut u, &mut domain_spec, &mut tmp);
-            
-            tmp = multiply_by_scalar_vec(&mut z, &mut domain_spec, -alpha_solve);
+
+            tmp = multiply_by_scalar_vec(&mut z, &mut domain_spec,-alpha_solve);
             r = subtrac_vec(&mut r, &mut domain_spec, &mut tmp);
             gamma_solve = scalar_product_itself(&mut r, &mut domain_spec);
             println!("{}", gamma_solve/gamma_zero);
             let distance = scalar_product_itself(&mut r, &mut domain_spec);
-            println!("{}", distance);
+
             beta_solve = gamma_solve/delta_solve;
             tmp = multiply_by_scalar_vec(&mut p, &mut domain_spec, beta_solve);
             p = subtrac_vec(&mut r, &mut domain_spec, &mut tmp);
             delta_solve = gamma_solve;
             //pretty_print_vec(&mut u);
         }
-       // pretty_print_vec(&mut u);  
+       // pretty_print_vec(&mut u);
 
-        ax = multiply_by_a_matrix(A,B,C,D,&mut u,&mut domain_spec,alpha_sim_par,gamma_sim_par);
+        ax = multiply_by_a_matrix(&mut u,&mut
+domain_spec,alpha_sim_par,gamma_sim_par);
         // pretty_print_vec(&mut ax);
         // println!("-------------------\n");
-         b = compute_b(&mut u, &mut domain_spec, &mut control_array,gamma_sim_par);
+         b = compute_b(&mut u, &mut domain_spec, &mut
+control_array,gamma_sim_par);
          r = subtrac_vec(&mut b, &mut domain_spec, &mut ax);
          p = force_copy(&mut r);
          delta_solve = scalar_product_itself(&mut r, &mut domain_spec );
-        if k == 50{
+
+         if k == 50{
             control_array = vec![0.0; 2*A-2*B];
         }
     }
