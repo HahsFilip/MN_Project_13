@@ -65,8 +65,7 @@ Vec<Vec<i32>>, alpha: f32, gamma: f32 ) -> Vec<Vec<f32>> {
     }
     return result;
 }
-fn compute_b (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c:
-&mut Vec<f32>, gamma: f32 ) -> Vec<Vec<f32>>{
+fn compute_b (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c:&mut Vec<f32>, gamma: f32, alpha: f32 ) -> Vec<Vec<f32>>{
     let mut result = vec![vec![0.0; u[0].len()]; u.len()];
     for i in 0..u.len(){
         for j in 0..u[0].len(){
@@ -77,7 +76,7 @@ fn compute_b (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c:
                 }else{
                     {
                         let index: usize = domain[i][j] as usize;
-                    result[i][j] = u[i][j]+c[index]*gamma;
+                    result[i][j] = u[i][j]+c[index]*gamma*alpha;
                     }
                 }
             }
@@ -156,7 +155,7 @@ fn force_copy(x: &mut Vec<Vec<f32>> ) -> Vec<Vec<f32>> {
     return result;
 }
 fn main()-> Result<(), String> {
-    let diffusivity = 10.0;
+    let diffusivity = 100.0;
     let h = 1.0;
     let beta = 100.0;
     let dt = 0.10;
@@ -218,11 +217,10 @@ a_int,b_int,c_int,d_int);
        // println!("{:?}",domain_spec[i]);
     }
     pretty_print_int(&mut domain_spec );
-    ax = multiply_by_a_matrix(&mut u,&mut
-domain_spec,alpha_sim_par,gamma_sim_par);
+    ax = multiply_by_a_matrix(&mut u,&mut domain_spec,alpha_sim_par,gamma_sim_par);
    // pretty_print_vec(&mut ax);
    // println!("-------------------\n");
-    b = compute_b(&mut u, &mut domain_spec, &mut control_array,gamma_sim_par);
+    b = compute_b(&mut u, &mut domain_spec, &mut control_array,gamma_sim_par, alpha_sim_par);
     r = subtrac_vec(&mut b, &mut domain_spec, &mut ax);
     p = force_copy(&mut r);
    // pretty_print_vec(&mut p);
@@ -260,10 +258,8 @@ domain_spec,alpha_sim_par,gamma_sim_par);
 
                     let grayscale = u[i][j] as u8;
                    //println!("{}", 2*(i as i32));
-                    canvas.set_draw_color(Color::RGB(2*grayscale,
-2*grayscale, 2*grayscale));
-                    canvas.fill_rect(Rect::new(2*(i as i32), 2*(j as
-i32), 2, 2));
+                    canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
+                    canvas.fill_rect(Rect::new(2*(i as i32), 2*(j as i32), 2, 2));
 
                 }
 
@@ -273,7 +269,7 @@ i32), 2, 2));
         for _n in 0..10{
             z = multiply_by_a_matrix(&mut p,&mut domain_spec,alpha_sim_par,gamma_sim_par);
             //pretty_print_vec(&mut z);
-            alpha_solve = -delta_solve/scalar_product(&mut p, &mutdomain_spec, &mut z);
+            alpha_solve = -delta_solve/scalar_product(&mut p, &mut domain_spec, &mut z);
             //println!("{}", delta_solve);
             tmp = multiply_by_scalar_vec(&mut p, &mut domain_spec, alpha_solve);
             //pretty_print_vec(&mut tmp);
@@ -297,8 +293,7 @@ i32), 2, 2));
 domain_spec,alpha_sim_par,gamma_sim_par);
         // pretty_print_vec(&mut ax);
         // println!("-------------------\n");
-         b = compute_b(&mut u, &mut domain_spec, &mut
-control_array,gamma_sim_par);
+         b = compute_b(&mut u, &mut domain_spec, &mut control_array,gamma_sim_par, alpha_sim_par);
          r = subtrac_vec(&mut b, &mut domain_spec, &mut ax);
          p = force_copy(&mut r);
          delta_solve = scalar_product_itself(&mut r, &mut domain_spec );
