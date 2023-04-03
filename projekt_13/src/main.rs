@@ -24,8 +24,7 @@ fn internal_detection(i: i32, j: i32, a: i32, b:i32, c:i32, d:i32) -> i32 {
 
 
 }
-fn multiply_by_a_matrix( x: &mut Vec<Vec<f32>>,domain: &mut
-Vec<Vec<i32>>, alpha: f32, gamma: f32 ) -> Vec<Vec<f32>> {
+fn multiply_by_a_matrix( x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, alpha: f32, gamma: f32 ) -> Vec<Vec<f32>> {
     let mut tmp:f32;
     let mut result = vec![vec![0.0; x[0].len()]; x.len()];
     for i in 1..x.len()-1{
@@ -84,8 +83,7 @@ fn compute_b (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c:&mut Vec<f32>,
     }
     return result;
 }
-fn subtrac_vec (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, y:
-&mut Vec<Vec<f32>>)-> Vec<Vec<f32>>{// x - y
+fn subtrac_vec (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, y: &mut Vec<Vec<f32>>)-> Vec<Vec<f32>>{// x - y
     let mut result = vec![vec![0.0; x[0].len()]; x.len()];
     for i in 0..x.len(){
         for j in 0..x[0].len(){
@@ -154,6 +152,52 @@ fn force_copy(x: &mut Vec<Vec<f32>> ) -> Vec<Vec<f32>> {
     }
     return result;
 }
+
+fn conjugate_gradiant(u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,a_func: &dyn Fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>, f32, f32) -> Vec<Vec<f32>>,b_func: &dyn Fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>, f32, f32,f32) -> Vec<Vec<f32>>, f32: gamma_sim_par, f32: alpha_sim_par  ) -> Vec<Vec<f32>>{
+    let mut ax :Vec<Vec<f32>>;
+    let mut u :Vec<Vec<f32>>;
+    let mut r :Vec<Vec<f32>>;
+    let mut b :Vec<Vec<f32>>;
+    let mut z :Vec<Vec<f32>>;
+    let mut p :Vec<Vec<f32>>;
+    let mut tmp :Vec<Vec<f32>>;
+    let mut delta_solve:f32;
+    let mut alpha_solve:f32;
+    let mut beta_solve :f32;
+    let mut gamma_solve:f32;
+    u = u_0.clone();
+    ax = a_func( u,domain_spec,alpha_sim_par,gamma_sim_par);
+    // pretty_print_vec(&mut ax);
+    // println!("-------------------\n");
+     b = b_func(&mut u_0,  domain_spec, control_array,gamma_sim_par, alpha_sim_par);
+     r = subtrac_vec( &mut b, domain_spec, &mut ax);
+     p = r.clone();
+     delta_solve = scalar_product_itself(&mut r, &mut domain_spec );
+     let gamma_zero = delta_solve;
+     for _n in 0..10{
+        z = multiply_by_a_matrix(&mut p,&mut domain_spec,alpha_sim_par, gamma_sim_par);
+        //pretty_print_vec(&mut z);
+        alpha_solve = -delta_solve/scalar_product(&mut p, &mut domain_spec, &mut z);
+        //println!("{}", delta_solve);
+        tmp = multiply_by_scalar_vec(&mut p, &mut domain_spec, alpha_solve);
+        //pretty_print_vec(&mut tmp);
+        *u_0 = subtrac_vec(u_0, &mut domain_spec, &mut tmp);
+
+        tmp = multiply_by_scalar_vec(&mut z, &mut domain_spec,-alpha_solve);
+        r = subtrac_vec(&mut r, &mut domain_spec, &mut tmp);
+        gamma_solve = scalar_product_itself(&mut r, &mut domain_spec);
+        println!("{}", gamma_solve/gamma_zero);
+        let distance = scalar_product_itself(&mut r, &mut domain_spec);
+
+        beta_solve = gamma_solve/delta_solve;
+        tmp = multiply_by_scalar_vec(&mut p, &mut domain_spec, beta_solve);
+        p = subtrac_vec(&mut r, &mut domain_spec, &mut tmp);
+        delta_solve = gamma_solve;
+        //pretty_print_vec(&mut u);
+    }
+     u_0
+}
+
 fn main()-> Result<(), String> {
     let diffusivity = 100.0;
     let h = 1.0;
@@ -194,18 +238,10 @@ fn main()-> Result<(), String> {
     let mut rng = rand::thread_rng();
 
     let mut u= vec![vec![1.1; C+2]; A+2];
-    let mut ax :Vec<Vec<f32>>;
-    let mut r :Vec<Vec<f32>>;
-    let mut b :Vec<Vec<f32>>;
-    let mut z :Vec<Vec<f32>>;
-    let mut p :Vec<Vec<f32>>;
-    let mut tmp :Vec<Vec<f32>>;
+
     let gamma_sim_par = 2.0*h*beta/diffusivity;
     let alpha_sim_par = diffusivity*dt/(h*h);
-    let mut delta_solve:f32;
-    let mut alpha_solve:f32;
-    let mut beta_solve :f32;
-    let mut gamma_solve:f32;
+
 
     for i in 0..A{
         for j in 0..C{
@@ -216,19 +252,13 @@ a_int,b_int,c_int,d_int);
         }
        // println!("{:?}",domain_spec[i]);
     }
-    pretty_print_int(&mut domain_spec );
-    ax = multiply_by_a_matrix(&mut u,&mut domain_spec,alpha_sim_par,gamma_sim_par);
-   // pretty_print_vec(&mut ax);
-   // println!("-------------------\n");
-    b = compute_b(&mut u, &mut domain_spec, &mut control_array,gamma_sim_par, alpha_sim_par);
-    r = subtrac_vec(&mut b, &mut domain_spec, &mut ax);
-    p = force_copy(&mut r);
+ //   pretty_print_int(&mut domain_spec );
+   
    // pretty_print_vec(&mut p);
     println!("-------------------\n");
-    delta_solve = scalar_product_itself(&mut r, &mut domain_spec );
-    let gamma_zero = delta_solve;
 
-    pretty_print_vec(&mut b);
+
+ //   pretty_print_vec(&mut b);
     'running: for k in 0..100{
         let ten_millis = time::Duration::from_millis(100);
         //std::thread::sleep(ten_millis);
@@ -249,9 +279,6 @@ a_int,b_int,c_int,d_int);
         }}
        for i in 0..u.len(){
 
-
-
-
             for j in 0..u[0].len(){
 
                 if domain_spec[i][j]!=-1{
@@ -266,41 +293,21 @@ a_int,b_int,c_int,d_int);
             }
 
         }
-        for _n in 0..10{
-            z = multiply_by_a_matrix(&mut p,&mut domain_spec,alpha_sim_par,gamma_sim_par);
-            //pretty_print_vec(&mut z);
-            alpha_solve = -delta_solve/scalar_product(&mut p, &mut domain_spec, &mut z);
-            //println!("{}", delta_solve);
-            tmp = multiply_by_scalar_vec(&mut p, &mut domain_spec, alpha_solve);
-            //pretty_print_vec(&mut tmp);
-            u = subtrac_vec(&mut u, &mut domain_spec, &mut tmp);
-
-            tmp = multiply_by_scalar_vec(&mut z, &mut domain_spec,-alpha_solve);
-            r = subtrac_vec(&mut r, &mut domain_spec, &mut tmp);
-            gamma_solve = scalar_product_itself(&mut r, &mut domain_spec);
-            println!("{}", gamma_solve/gamma_zero);
-            let distance = scalar_product_itself(&mut r, &mut domain_spec);
-
-            beta_solve = gamma_solve/delta_solve;
-            tmp = multiply_by_scalar_vec(&mut p, &mut domain_spec, beta_solve);
-            p = subtrac_vec(&mut r, &mut domain_spec, &mut tmp);
-            delta_solve = gamma_solve;
-            //pretty_print_vec(&mut u);
-        }
+        
        // pretty_print_vec(&mut u);
-
-        ax = multiply_by_a_matrix(&mut u,&mut
-domain_spec,alpha_sim_par,gamma_sim_par);
+/*
+        ax = multiply_by_a_matrix(&mut u,&mut domain_spec,alpha_sim_par,gamma_sim_par);
         // pretty_print_vec(&mut ax);
         // println!("-------------------\n");
          b = compute_b(&mut u, &mut domain_spec, &mut control_array,gamma_sim_par, alpha_sim_par);
          r = subtrac_vec(&mut b, &mut domain_spec, &mut ax);
          p = force_copy(&mut r);
          delta_solve = scalar_product_itself(&mut r, &mut domain_spec );
-
+*/
          if k == 50{
             control_array = vec![0.0; 2*A-2*B];
         }
     }
+
     Ok(())
 }
