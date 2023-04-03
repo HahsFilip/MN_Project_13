@@ -153,7 +153,7 @@ fn force_copy(x: &mut Vec<Vec<f32>> ) -> Vec<Vec<f32>> {
     return result;
 }
 
-fn conjugate_gradiant(u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,a_func: &dyn Fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>, f32, f32) -> Vec<Vec<f32>>,b_func: &dyn Fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>, f32, f32,f32) -> Vec<Vec<f32>>, f32: gamma_sim_par, f32: alpha_sim_par  ) -> Vec<Vec<f32>>{
+fn conjugate_gradiant( c_array:  Option<Vec<f32>>, gamma_sim: f32,  alpha_sim: f32 ,u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,a_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>, f32, f32) -> Vec<Vec<f32>>,b_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>,&mut Vec<f32>, f32,f32) -> Vec<Vec<f32>>) -> Vec<Vec<f32>>{
     let mut ax :Vec<Vec<f32>>;
     let mut u :Vec<Vec<f32>>;
     let mut r :Vec<Vec<f32>>;
@@ -166,26 +166,26 @@ fn conjugate_gradiant(u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,a_func
     let mut beta_solve :f32;
     let mut gamma_solve:f32;
     u = u_0.clone();
-    ax = a_func( u,domain_spec,alpha_sim_par,gamma_sim_par);
+    ax = a_func( &mut u,domain_spec,alpha_sim,gamma_sim);
     // pretty_print_vec(&mut ax);
     // println!("-------------------\n");
-     b = b_func(&mut u_0,  domain_spec, control_array,gamma_sim_par, alpha_sim_par);
+     b = b_func(&mut u_0,  domain_spec, &mut c_array.unwrap_or(vec![1.1; 10]),gamma_sim, alpha_sim);
      r = subtrac_vec( &mut b, domain_spec, &mut ax);
      p = r.clone();
      delta_solve = scalar_product_itself(&mut r, &mut domain_spec );
      let gamma_zero = delta_solve;
      for _n in 0..10{
-        z = multiply_by_a_matrix(&mut p,&mut domain_spec,alpha_sim_par, gamma_sim_par);
+        z = multiply_by_a_matrix(&mut p, domain_spec,alpha_sim, gamma_sim);
         //pretty_print_vec(&mut z);
-        alpha_solve = -delta_solve/scalar_product(&mut p, &mut domain_spec, &mut z);
+        alpha_solve = -delta_solve/scalar_product(&mut p,  domain_spec, &mut z);
         //println!("{}", delta_solve);
-        tmp = multiply_by_scalar_vec(&mut p, &mut domain_spec, alpha_solve);
+        tmp = multiply_by_scalar_vec(&mut p,  domain_spec, alpha_solve);
         //pretty_print_vec(&mut tmp);
-        *u_0 = subtrac_vec(u_0, &mut domain_spec, &mut tmp);
+        u = subtrac_vec(&mut u, domain_spec, &mut tmp);
 
-        tmp = multiply_by_scalar_vec(&mut z, &mut domain_spec,-alpha_solve);
-        r = subtrac_vec(&mut r, &mut domain_spec, &mut tmp);
-        gamma_solve = scalar_product_itself(&mut r, &mut domain_spec);
+        tmp = multiply_by_scalar_vec(&mut z, domain_spec,-alpha_solve);
+        r = subtrac_vec(&mut r,  domain_spec, &mut tmp);
+        gamma_solve = scalar_product_itself(&mut r, domain_spec);
         println!("{}", gamma_solve/gamma_zero);
         let distance = scalar_product_itself(&mut r, &mut domain_spec);
 
@@ -195,7 +195,7 @@ fn conjugate_gradiant(u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,a_func
         delta_solve = gamma_solve;
         //pretty_print_vec(&mut u);
     }
-     u_0
+     u
 }
 
 fn main()-> Result<(), String> {
