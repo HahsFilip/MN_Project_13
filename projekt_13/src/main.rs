@@ -301,11 +301,11 @@ fn change_control_array( adjoint_matrix:  Vec<Vec<f32>>,  domain:  Vec<Vec<i32>>
 result
 }
 fn main()-> Result<(), String> {
-    let diffusivity = 10.0;
+    let diffusivity = 1.0;
     let h = 1.0;
-    let beta = 100.0;
+    let beta = 10.0;
     let dt = 0.010;
-    let n_time_steps = 10;
+    let n_time_steps = 100;
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
 
@@ -325,10 +325,10 @@ fn main()-> Result<(), String> {
     canvas.present();
 
 
-    const A: usize = 20;
-    const B: usize = 5;
-    const C: usize = 15;
-    const D: usize = 8;
+    const A: usize = 40;
+    const B: usize = 10;
+    const C: usize = 30;
+    const D: usize = 16;
     let a_int: i32 = A.try_into().unwrap();
     let b_int: i32 = B.try_into().unwrap();
     let c_int: i32 = C.try_into().unwrap();
@@ -386,7 +386,7 @@ fn main()-> Result<(), String> {
         }
     }
 {
-    let pixel_size: u32 = 20;
+    let pixel_size: u32 = 10;
     let max_x: i32 = (pixel_size as i32)*(u.len() as i32);
     let max_y: i32 =(pixel_size as i32)*(u[0].len() as i32);
 
@@ -435,7 +435,7 @@ fn main()-> Result<(), String> {
     for k in 0..control_array.len(){
         let max_ind = control_array.len();
         u_star = conjugate_gradiant(adjoint_gamma, alpha_sim_par, u_star, &mut domain_spec, multiply_by_a_matrix_star, compute_b_star, None);
-        control_array[n_time_steps-k-1] = change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[max_ind-1-k], beta, 0.01);
+        control_array[n_time_steps-k-1] = change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[max_ind-1-k], beta, 1.1);
     }
     println!("{}", scalar_product_itself( &mut u_star, &mut  domain_spec));
 }
