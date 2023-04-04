@@ -202,7 +202,7 @@ fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
         if gamma_solve/gamma_zero < 0.001{
             break;
         }
-        //pretty_print_vec(&mut u);
+       
     }
      u
 }
