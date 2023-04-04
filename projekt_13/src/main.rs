@@ -292,7 +292,7 @@ fn change_control_array( adjoint_matrix:  Vec<Vec<f32>>,  domain:  Vec<Vec<i32>>
             if domain[i][j] != -1{
                 if domain[i][j] != -2{   
                     let index: usize = domain[i][j] as usize;
-                    result[index]= c_array[index]+ 0.1*adjoint_matrix[i][j];
+                    result[index]= c_array[index]+ 1.0*adjoint_matrix[i][j];
                     }
             }
         
@@ -348,9 +348,9 @@ fn main()-> Result<(), String> {
         for j in 0..C{
             domain_spec[i+1][j+1] = internal_detection(i.try_into().unwrap(), j.try_into().unwrap(), a_int,b_int,c_int,d_int);
             u[i+1][j+1] = rng.gen::<f32>()*50.1;
-            if (i as i32 -10).abs() < 3{
-                u[i+1][j+1]= 100.0;
-            }
+            // if (i as i32 -10).abs() < 3{
+            //     u[i+1][j+1]= 100.0;
+            // }
         }
        // println!("{:?}",domain_spec[i]);
     }
@@ -417,20 +417,8 @@ fn main()-> Result<(), String> {
         }
     }
         u = conjugate_gradiant(gamma_sim_par, alpha_sim_par, u, &mut domain_spec, multiply_by_a_matrix, compute_b, Some(control_array[k].clone()));
-        /*
-        fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
-            u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,
-            a_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>, f32, f32) -> Vec<Vec<f32>>,
-            b_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>,&mut Vec<f32>, f32,f32) -> Vec<Vec<f32>>,
-             c_array:  Option<Vec<f32>> ) -> Vec<Vec<f32>>{*/
-      
-      
-                // pretty_print_vec(&mut u);
+        
 
-
-        //  if k == 50{
-        //     control_array = vec![0.0; 2*A-2*B];
-        // }
     }
     
     let mut u_star = vec![vec![goal; C+2]; A+2];
