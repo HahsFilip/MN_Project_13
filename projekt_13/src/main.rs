@@ -139,6 +139,20 @@ fn compute_b (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c:&mut Vec<f32>,
     }
     return result;
 }
+fn compute_b_star (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c:&mut Vec<f32>, gamma: f32, alpha: f32 ) -> Vec<Vec<f32>>{
+    let mut result = vec![vec![0.0; u[0].len()]; u.len()];
+    for i in 0..u.len(){
+        for j in 0..u[0].len(){
+            if domain[i][j] != -1{
+                
+                    result[i][j] = u[i][j];
+
+               
+            }
+        }
+    }
+    return result;
+}
 fn subtrac_vec (x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, y: &mut Vec<Vec<f32>>)-> Vec<Vec<f32>>{// x - y
     let mut result = vec![vec![0.0; x[0].len()]; x.len()];
     for i in 0..x.len(){
@@ -213,10 +227,10 @@ fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
     u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,
     a_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>, f32, f32) -> Vec<Vec<f32>>,
     b_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>,&mut Vec<f32>, f32,f32) -> Vec<Vec<f32>>,
-     c_array:  Option<Vec<f32>> ) -> Vec<Vec<f32>>{
+    c_array:  Option<Vec<f32>> ) -> Vec<Vec<f32>>{
    
    
-        let mut ax :Vec<Vec<f32>>;
+    let mut ax :Vec<Vec<f32>>;
     let mut u :Vec<Vec<f32>>;
     let mut r :Vec<Vec<f32>>;
     let mut b :Vec<Vec<f32>>;
@@ -248,14 +262,14 @@ fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
         tmp = multiply_by_scalar_vec(&mut z, domain_spec,-alpha_solve);
         r = subtrac_vec(&mut r,  domain_spec, &mut tmp);
         gamma_solve = scalar_product_itself(&mut r, domain_spec);
-        println!("{}", gamma_solve/gamma_zero);
+       // println!("{}", gamma_solve/gamma_zero);
         let distance = scalar_product_itself(&mut r,  domain_spec);
 
         beta_solve = gamma_solve/delta_solve;
         tmp = multiply_by_scalar_vec(&mut p,  domain_spec, beta_solve);
         p = subtrac_vec(&mut r, domain_spec, &mut tmp);
         delta_solve = gamma_solve;
-        if gamma_solve/gamma_zero < 0.001{
+        if gamma_solve/gamma_zero < 0.00001{
             break;
         }
        
@@ -263,12 +277,25 @@ fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
      u
 }
 
+fn change_control_array( adjoint_matrix:  Vec<Vec<f32>>,  domain:  Vec<Vec<i32>>, c_array: &mut Vec<f32>){
+    for i in 0..adjoint_matrix.len(){
+        for j in 0..adjoint_matrix[0].len(){
+            if domain[i][j] != -1{
+                if domain[i][j] != -2{   
+                    let index: usize = domain[i][j] as usize;
+                    c_array[index]= c_array[index]+ 1.0*adjoint_matrix[i][j];
+                    }
+            }
+        
+    }
+}
+}
 fn main()-> Result<(), String> {
-    let diffusivity = 100.0;
+    let diffusivity = 10.0;
     let h = 1.0;
     let beta = 100.0;
-    let dt = 0.10;
-
+    let dt = 0.010;
+    let n_time_steps = 100;
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
 
@@ -288,25 +315,25 @@ fn main()-> Result<(), String> {
     canvas.present();
 
 
-    const A: usize = 200;
-    const B: usize = 50;
-    const C: usize = 150;
-    const D: usize = 80;
+    const A: usize = 20;
+    const B: usize = 5;
+    const C: usize = 15;
+    const D: usize = 8;
     let a_int: i32 = A.try_into().unwrap();
     let b_int: i32 = B.try_into().unwrap();
     let c_int: i32 = C.try_into().unwrap();
     let d_int: i32 = D.try_into().unwrap();
 
-    let mut control_array = vec![50.0; 2*A-2*B];
+    let mut control_array = vec![vec![25.0; 2*A-2*B];n_time_steps];
 
     let mut domain_spec= vec![vec![-1; C+2]; A+2];
     let mut rng = rand::thread_rng();
 
     let mut u= vec![vec![1.1; C+2]; A+2];
-
+    let mut u_backup = vec![vec![1.1; C+2]; A+2];
     let gamma_sim_par = 2.0*h*beta/diffusivity;
     let alpha_sim_par = diffusivity*dt/(h*h);
-
+    let adjoint_gamma = 2.0*h*beta;
 
     for i in 0..A{
         for j in 0..C{
@@ -315,14 +342,16 @@ fn main()-> Result<(), String> {
         }
        // println!("{:?}",domain_spec[i]);
     }
+    u_backup = u.clone();
  //   pretty_print_int(&mut domain_spec );
    
    // pretty_print_vec(&mut p);
     println!("-------------------\n");
 
-
+    for l in 0..500{
+        u = u_backup.clone();
  //   pretty_print_vec(&mut b);
-    'running: for k in 0..100{
+    'running: for k in 0..n_time_steps{
         let ten_millis = time::Duration::from_millis(100);
         //std::thread::sleep(ten_millis);
         canvas.set_draw_color(Color::RGB(0,0,0));
@@ -357,7 +386,7 @@ fn main()-> Result<(), String> {
 
         }
         
-        u = conjugate_gradiant(gamma_sim_par, alpha_sim_par, u, &mut domain_spec, multiply_by_a_matrix, compute_b, Some(control_array.clone()));
+        u = conjugate_gradiant(gamma_sim_par, alpha_sim_par, u, &mut domain_spec, multiply_by_a_matrix, compute_b, Some(control_array[k].clone()));
         /*
         fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
             u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,
@@ -373,8 +402,17 @@ fn main()-> Result<(), String> {
         //     control_array = vec![0.0; 2*A-2*B];
         // }
     }
-    let mut u_star = vec![vec![50.0; C+2]; A+2];
+    
+    let mut u_star = vec![vec![25.0; C+2]; A+2];
     u_star = subtrac_vec(&mut u_star,&mut domain_spec, &mut u);
-
+    pretty_print_vec(&mut u_star);
+    
+    pretty_print_vec(&mut control_array);
+    for k in 0..n_time_steps-1{
+        u_star = conjugate_gradiant(adjoint_gamma, alpha_sim_par, u_star, &mut domain_spec, multiply_by_a_matrix_star, compute_b_star, None);
+        change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[n_time_steps-k-1])
+    }
+    println!("{}", scalar_product_itself(&mut u_star, &mut domain_spec));
+}
     Ok(())
 }
