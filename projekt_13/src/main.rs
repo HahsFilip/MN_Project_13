@@ -38,20 +38,18 @@ fn multiply_by_a_matrix( x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, alpha
                 }
 
                 if domain[i][j+1] != -1{
-                    if domain[i][j] == -2{
+                    
                     tmp = tmp - alpha*x[i][j+1];
-                }else{
-                    tmp = tmp - (2.0*alpha)*x[i][j+1];
-                }
+                
+                   
+                
                 }else{
                     tmp = tmp - alpha*x[i][j-1];
                 }
                 if domain[i][j-1] != -1{
-                    if domain[i][j] == -2{
+                    
                     tmp = tmp - alpha*x[i][j-1];
-                    }else{
-                        tmp = tmp - (2.0*alpha)*x[i][j-1];
-                    }
+              
                 }else{
                     tmp = tmp - alpha*x[i][j+1];
                 }
@@ -86,20 +84,16 @@ fn multiply_by_a_matrix_star( x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, 
                 }
 
                 if domain[i][j+1] != -1{
-                    if domain[i][j] == -2{
+                    
                     tmp = tmp - alpha*x[i][j+1];
-                }else{
-                    tmp = tmp - (alpha+1.0)*x[i][j+1];
-                }
+             
                 }else{
                     tmp = tmp - alpha*x[i][j-1];
                 }
                 if domain[i][j-1] != -1{
-                    if domain[i][j] == -2{
+                  
                     tmp = tmp - alpha*x[i][j-1];
-                    }else{
-                        tmp = tmp - (alpha+1.0)*x[i][j-1];
-                    }
+                 
                 }else{
                     tmp = tmp - alpha*x[i][j+1];
                 }
@@ -131,7 +125,7 @@ fn compute_b (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c:&mut Vec<f32>,
                 }else{
                     {
                         let index: usize = domain[i][j] as usize;
-                    result[i][j] = c[index]*gamma*alpha;
+                    result[i][j] = u[i][j]+c[index]*gamma*alpha;
                     }
                 }
             }
@@ -144,9 +138,10 @@ fn compute_b_star (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c:&mut Vec<
     for i in 0..u.len(){
         for j in 0..u[0].len(){
             if domain[i][j] != -1{
-                
+                if domain[i][j] == -2{
                     result[i][j] = u[i][j];
-
+                
+                }
                
             }
         }
@@ -200,6 +195,19 @@ Vec<Vec<i32>>)-> f32{
     }
     return result;
 }
+fn average_of_vec (x:  Vec<Vec<f32>>,domain:  Vec<Vec<i32>>)-> f32{
+        let mut result: f32 = 0.0;
+        let mut it = 0.0;
+        for i in 0..x.len(){
+            for j in 0..x[0].len(){
+                if domain[i][j] != -1{
+                    result = result + x[i][j];
+                    it = it +1.0;
+                }
+            }
+        }
+        return result/it;
+    }
 fn pretty_print_vec( x: &mut Vec<Vec<f32>>) {
     for i in 0..x.len(){
         println!("{:.1?}",x[i]);
@@ -266,10 +274,10 @@ fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
         let distance = scalar_product_itself(&mut r,  domain_spec);
 
         beta_solve = gamma_solve/delta_solve;
-        tmp = multiply_by_scalar_vec(&mut p,  domain_spec, beta_solve);
+        tmp = multiply_by_scalar_vec(&mut p,  domain_spec, -beta_solve);
         p = subtrac_vec(&mut r, domain_spec, &mut tmp);
         delta_solve = gamma_solve;
-        if gamma_solve/gamma_zero < 0.00001{
+        if gamma_solve/gamma_zero < 0.000001{
             break;
         }
        
@@ -277,18 +285,20 @@ fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
      u
 }
 
-fn change_control_array( adjoint_matrix:  Vec<Vec<f32>>,  domain:  Vec<Vec<i32>>, c_array: &mut Vec<f32>){
+fn change_control_array( adjoint_matrix:  Vec<Vec<f32>>,  domain:  Vec<Vec<i32>>, c_array: &mut Vec<f32>) -> Vec<f32>{
+    let mut result = vec![25.0;c_array.len()];
     for i in 0..adjoint_matrix.len(){
         for j in 0..adjoint_matrix[0].len(){
             if domain[i][j] != -1{
                 if domain[i][j] != -2{   
                     let index: usize = domain[i][j] as usize;
-                    c_array[index]= c_array[index]+ 1.0*adjoint_matrix[i][j];
+                    result[index]= c_array[index]+ 0.1*adjoint_matrix[i][j];
                     }
             }
         
     }
 }
+result
 }
 fn main()-> Result<(), String> {
     let diffusivity = 10.0;
@@ -324,7 +334,6 @@ fn main()-> Result<(), String> {
     let c_int: i32 = C.try_into().unwrap();
     let d_int: i32 = D.try_into().unwrap();
 
-    let mut control_array = vec![vec![25.0; 2*A-2*B];n_time_steps];
 
     let mut domain_spec= vec![vec![-1; C+2]; A+2];
     let mut rng = rand::thread_rng();
@@ -339,16 +348,22 @@ fn main()-> Result<(), String> {
         for j in 0..C{
             domain_spec[i+1][j+1] = internal_detection(i.try_into().unwrap(), j.try_into().unwrap(), a_int,b_int,c_int,d_int);
             u[i+1][j+1] = rng.gen::<f32>()*50.1;
+            if (i as i32 -10).abs() < 3{
+                u[i+1][j+1]= 100.0;
+            }
         }
        // println!("{:?}",domain_spec[i]);
     }
+    let goal = average_of_vec(u.clone(), domain_spec.clone());
+    let mut control_array = vec![vec![goal; 2*A-2*B];n_time_steps];
+
     u_backup = u.clone();
  //   pretty_print_int(&mut domain_spec );
    
    // pretty_print_vec(&mut p);
     println!("-------------------\n");
 
-    for l in 0..500{
+    for l in 0..500000-1{
         u = u_backup.clone();
  //   pretty_print_vec(&mut b);
     'running: for k in 0..n_time_steps{
@@ -393,7 +408,7 @@ fn main()-> Result<(), String> {
 
         }
         for i in 0..control_array[l].len(){
-            let grayscale = control_array[l][i] as u8;
+            let grayscale = ((control_array[k][i])) as u8;
             //println!("{}", 2*(i as i32));
              canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
              canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), max_y+50, pixel_size , pixel_size ));
@@ -418,16 +433,17 @@ fn main()-> Result<(), String> {
         // }
     }
     
-    let mut u_star = vec![vec![25.0; C+2]; A+2];
+    let mut u_star = vec![vec![goal; C+2]; A+2];
     u_star = subtrac_vec(&mut u_star,&mut domain_spec, &mut u);
-    pretty_print_vec(&mut u_star);
+    //pretty_print_vec(&mut u_star);
     
     pretty_print_vec(&mut control_array);
-    for k in 0..n_time_steps-1{
+    for k in 0..control_array.len(){
+        let max_ind = control_array.len();
         u_star = conjugate_gradiant(adjoint_gamma, alpha_sim_par, u_star, &mut domain_spec, multiply_by_a_matrix_star, compute_b_star, None);
-        change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[n_time_steps-k-1])
+        control_array[n_time_steps-k-1] = change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[max_ind-1-k])
     }
-    println!("{}", scalar_product_itself(&mut u_star, &mut domain_spec));
+    println!("{}", average_of_vec( u_star.clone(),  domain_spec.clone()));
 }
     Ok(())
 }
