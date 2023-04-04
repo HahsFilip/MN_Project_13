@@ -153,8 +153,14 @@ fn force_copy(x: &mut Vec<Vec<f32>> ) -> Vec<Vec<f32>> {
     return result;
 }
 
-fn conjugate_gradiant( c_array:  Option<Vec<f32>>, gamma_sim: f32,  alpha_sim: f32 ,u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,a_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>, f32, f32) -> Vec<Vec<f32>>,b_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>,&mut Vec<f32>, f32,f32) -> Vec<Vec<f32>>) -> Vec<Vec<f32>>{
-    let mut ax :Vec<Vec<f32>>;
+fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
+    u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,
+    a_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>, f32, f32) -> Vec<Vec<f32>>,
+    b_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>,&mut Vec<f32>, f32,f32) -> Vec<Vec<f32>>,
+     c_array:  Option<Vec<f32>> ) -> Vec<Vec<f32>>{
+   
+   
+        let mut ax :Vec<Vec<f32>>;
     let mut u :Vec<Vec<f32>>;
     let mut r :Vec<Vec<f32>>;
     let mut b :Vec<Vec<f32>>;
@@ -174,13 +180,13 @@ fn conjugate_gradiant( c_array:  Option<Vec<f32>>, gamma_sim: f32,  alpha_sim: f
      p = r.clone();
      delta_solve = scalar_product_itself(&mut r, domain_spec );
      let gamma_zero = delta_solve;
-     for _n in 0..10{
+     for _n in 0..100{
         z = multiply_by_a_matrix(&mut p, domain_spec,alpha_sim, gamma_sim);
-        //pretty_print_vec(&mut z);
+        
         alpha_solve = -delta_solve/scalar_product(&mut p,  domain_spec, &mut z);
-        //println!("{}", delta_solve);
+       
         tmp = multiply_by_scalar_vec(&mut p,  domain_spec, alpha_solve);
-        //pretty_print_vec(&mut tmp);
+       
         u = subtrac_vec(&mut u, domain_spec, &mut tmp);
 
         tmp = multiply_by_scalar_vec(&mut z, domain_spec,-alpha_solve);
@@ -193,6 +199,9 @@ fn conjugate_gradiant( c_array:  Option<Vec<f32>>, gamma_sim: f32,  alpha_sim: f
         tmp = multiply_by_scalar_vec(&mut p,  domain_spec, beta_solve);
         p = subtrac_vec(&mut r, domain_spec, &mut tmp);
         delta_solve = gamma_solve;
+        if gamma_solve/gamma_zero < 0.001{
+            break;
+        }
         //pretty_print_vec(&mut u);
     }
      u
@@ -292,7 +301,16 @@ fn main()-> Result<(), String> {
 
         }
         
-       // pretty_print_vec(&mut u);
+        u = conjugate_gradiant(gamma_sim_par, alpha_sim_par, u, &mut domain_spec, multiply_by_a_matrix, compute_b, Some(control_array.clone()));
+        /*
+        fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
+            u_0:  Vec<Vec<f32>>,domain_spec: &mut Vec<Vec<i32>>,
+            a_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>, f32, f32) -> Vec<Vec<f32>>,
+            b_func: fn( &mut Vec<Vec<f32>>, &mut Vec<Vec<i32>>,&mut Vec<f32>, f32,f32) -> Vec<Vec<f32>>,
+             c_array:  Option<Vec<f32>> ) -> Vec<Vec<f32>>{*/
+      
+      
+                // pretty_print_vec(&mut u);
 /*
         ax = multiply_by_a_matrix(&mut u,&mut domain_spec,alpha_sim_par,gamma_sim_par);
         // pretty_print_vec(&mut ax);
