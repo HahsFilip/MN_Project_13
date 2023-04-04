@@ -38,12 +38,68 @@ fn multiply_by_a_matrix( x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, alpha
                 }
 
                 if domain[i][j+1] != -1{
+                    if domain[i][j] == -2{
                     tmp = tmp - alpha*x[i][j+1];
+                }else{
+                    tmp = tmp - (2.0*alpha)*x[i][j+1];
+                }
                 }else{
                     tmp = tmp - alpha*x[i][j-1];
                 }
                 if domain[i][j-1] != -1{
+                    if domain[i][j] == -2{
                     tmp = tmp - alpha*x[i][j-1];
+                    }else{
+                        tmp = tmp - (2.0*alpha)*x[i][j-1];
+                    }
+                }else{
+                    tmp = tmp - alpha*x[i][j+1];
+                }
+                if domain[i-1][j] != -1{
+                    tmp = tmp - alpha*x[i-1][j];
+                }else{
+                    tmp = tmp - alpha*x[i+1][j];
+                }
+                if domain[i+1][j] != -1{
+                    tmp = tmp - alpha*x[i+1][j];
+                }else{
+                    tmp = tmp - alpha*x[i-1][j];
+                }
+            }
+            result[i][j] = tmp;
+        }
+
+    }
+    return result;
+}
+fn multiply_by_a_matrix_star( x: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, alpha: f32, gamma: f32 ) -> Vec<Vec<f32>> {
+    let mut tmp:f32;
+    let mut result = vec![vec![0.0; x[0].len()]; x.len()];
+    for i in 1..x.len()-1{
+        for j in 1..x[0].len()-1{
+            tmp = 0.0;
+            if domain[i][j] != -1{
+                if domain[i][j] == -2{
+                    tmp = tmp + (1.0+4.0*alpha)*x[i][j];
+                }else{
+                    tmp = tmp + (1.0+4.0*alpha+alpha*gamma)*x[i][j];
+                }
+
+                if domain[i][j+1] != -1{
+                    if domain[i][j] == -2{
+                    tmp = tmp - alpha*x[i][j+1];
+                }else{
+                    tmp = tmp - (alpha+1.0)*x[i][j+1];
+                }
+                }else{
+                    tmp = tmp - alpha*x[i][j-1];
+                }
+                if domain[i][j-1] != -1{
+                    if domain[i][j] == -2{
+                    tmp = tmp - alpha*x[i][j-1];
+                    }else{
+                        tmp = tmp - (alpha+1.0)*x[i][j-1];
+                    }
                 }else{
                     tmp = tmp - alpha*x[i][j+1];
                 }
@@ -75,7 +131,7 @@ fn compute_b (u: &mut Vec<Vec<f32>>,domain: &mut Vec<Vec<i32>>, c:&mut Vec<f32>,
                 }else{
                     {
                         let index: usize = domain[i][j] as usize;
-                    result[i][j] = u[i][j]+c[index]*gamma*alpha;
+                    result[i][j] = c[index]*gamma*alpha;
                     }
                 }
             }
@@ -241,7 +297,7 @@ fn main()-> Result<(), String> {
     let c_int: i32 = C.try_into().unwrap();
     let d_int: i32 = D.try_into().unwrap();
 
-    let mut control_array = vec![100.0; 2*A-2*B];
+    let mut control_array = vec![50.0; 2*A-2*B];
 
     let mut domain_spec= vec![vec![-1; C+2]; A+2];
     let mut rng = rand::thread_rng();
@@ -311,19 +367,14 @@ fn main()-> Result<(), String> {
       
       
                 // pretty_print_vec(&mut u);
-/*
-        ax = multiply_by_a_matrix(&mut u,&mut domain_spec,alpha_sim_par,gamma_sim_par);
-        // pretty_print_vec(&mut ax);
-        // println!("-------------------\n");
-         b = compute_b(&mut u, &mut domain_spec, &mut control_array,gamma_sim_par, alpha_sim_par);
-         r = subtrac_vec(&mut b, &mut domain_spec, &mut ax);
-         p = force_copy(&mut r);
-         delta_solve = scalar_product_itself(&mut r, &mut domain_spec );
-*/
-         if k == 50{
-            control_array = vec![0.0; 2*A-2*B];
-        }
+
+
+        //  if k == 50{
+        //     control_array = vec![0.0; 2*A-2*B];
+        // }
     }
+    let mut u_star = vec![vec![50.0; C+2]; A+2];
+    u_star = subtrac_vec(&mut u_star,&mut domain_spec, &mut u);
 
     Ok(())
 }
