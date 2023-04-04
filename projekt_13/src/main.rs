@@ -368,8 +368,14 @@ fn main()-> Result<(), String> {
                 ..
             } => break 'running,
             _ => {}
-        }}
-       for i in 0..u.len(){
+        }
+    }
+{
+    let pixel_size: u32 = 20;
+    let max_x: i32 = (pixel_size as i32)*(u.len() as i32);
+    let max_y: i32 =(pixel_size as i32)*(u[0].len() as i32);
+
+    for i in 0..u.len(){
 
             for j in 0..u[0].len(){
 
@@ -378,14 +384,23 @@ fn main()-> Result<(), String> {
                     let grayscale = u[i][j] as u8;
                    //println!("{}", 2*(i as i32));
                     canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
-                    canvas.fill_rect(Rect::new(2*(i as i32), 2*(j as i32), 2, 2));
-
+                    canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), (pixel_size as i32)*(j as i32), pixel_size , pixel_size) );
+                    
+                
                 }
 
             }
 
         }
-        
+        for i in 0..control_array[l].len(){
+            let grayscale = control_array[l][i] as u8;
+            //println!("{}", 2*(i as i32));
+             canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
+             canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), max_y+50, pixel_size , pixel_size ));
+             
+
+        }
+    }
         u = conjugate_gradiant(gamma_sim_par, alpha_sim_par, u, &mut domain_spec, multiply_by_a_matrix, compute_b, Some(control_array[k].clone()));
         /*
         fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
