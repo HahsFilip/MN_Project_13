@@ -305,7 +305,7 @@ fn main()-> Result<(), String> {
     let h = 1.0;
     let beta = 100.0;
     let dt = 0.010;
-    let n_time_steps = 100;
+    let n_time_steps = 10;
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
 
@@ -407,7 +407,7 @@ fn main()-> Result<(), String> {
             }
 
         }
-        for i in 0..control_array[l].len(){
+        for i in 0..control_array[k].len(){
             let grayscale = ((control_array[k][i])) as u8;
             //println!("{}", 2*(i as i32));
              canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
@@ -437,13 +437,13 @@ fn main()-> Result<(), String> {
     u_star = subtrac_vec(&mut u_star,&mut domain_spec, &mut u);
     //pretty_print_vec(&mut u_star);
     
-    pretty_print_vec(&mut control_array);
+   // pretty_print_vec(&mut control_array);
     for k in 0..control_array.len(){
         let max_ind = control_array.len();
         u_star = conjugate_gradiant(adjoint_gamma, alpha_sim_par, u_star, &mut domain_spec, multiply_by_a_matrix_star, compute_b_star, None);
         control_array[n_time_steps-k-1] = change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[max_ind-1-k])
     }
-    println!("{}", average_of_vec( u_star.clone(),  domain_spec.clone()));
+    println!("{}", scalar_product_itself( &mut u_star, &mut  domain_spec));
 }
     Ok(())
 }
