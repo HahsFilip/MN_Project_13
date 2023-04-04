@@ -301,7 +301,7 @@ fn change_control_array( adjoint_matrix:  Vec<Vec<f32>>,  domain:  Vec<Vec<i32>>
 result
 }
 fn main()-> Result<(), String> {
-    let diffusivity = 1.0;
+    let diffusivity = 10.0;
     let h = 1.0;
     let beta = 10.0;
     let dt = 0.010;
@@ -348,9 +348,9 @@ fn main()-> Result<(), String> {
         for j in 0..C{
             domain_spec[i+1][j+1] = internal_detection(i.try_into().unwrap(), j.try_into().unwrap(), a_int,b_int,c_int,d_int);
             u[i+1][j+1] = rng.gen::<f32>()*50.1;
-            // if (i as i32 -10).abs() < 3{
-            //     u[i+1][j+1]= 100.0;
-            // }
+             if (i as i32 -20).abs() < 3{
+                 u[i+1][j+1]= 100.0;
+             }
         }
        // println!("{:?}",domain_spec[i]);
     }
@@ -399,7 +399,7 @@ fn main()-> Result<(), String> {
                     let grayscale = u[i][j] as u8;
                    //println!("{}", 2*(i as i32));
                     canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
-                    canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), (pixel_size as i32)*(j as i32), pixel_size , pixel_size) );
+                    canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), (pixel_size as i32)*(j as i32)+pixel_size as i32, pixel_size , pixel_size) );
                     
                 
                 }
@@ -411,9 +411,9 @@ fn main()-> Result<(), String> {
             let grayscale = ((control_array[k][i])) as u8;
             canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
             if i < (A-2*B){            
-                canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), max_y+50, pixel_size , pixel_size ));
+                canvas.fill_rect(Rect::new((pixel_size as i32)*((i +B +1)as i32),0 , pixel_size , pixel_size ));
             }else{
-                canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), max_y+100, pixel_size , pixel_size ));
+                canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32 - (A-2*B -1 )  as i32),max_y+pixel_size as i32, pixel_size , pixel_size ));
 
             }
             //println!("{}", 2*(i as i32));
