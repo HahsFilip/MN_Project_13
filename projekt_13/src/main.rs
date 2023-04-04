@@ -169,10 +169,10 @@ fn conjugate_gradiant( c_array:  Option<Vec<f32>>, gamma_sim: f32,  alpha_sim: f
     ax = a_func( &mut u,domain_spec,alpha_sim,gamma_sim);
     // pretty_print_vec(&mut ax);
     // println!("-------------------\n");
-     b = b_func(&mut u_0,  domain_spec, &mut c_array.unwrap_or(vec![1.1; 10]),gamma_sim, alpha_sim);
+     b = b_func(&mut u,  domain_spec, &mut c_array.unwrap_or(vec![1.1; 10]),gamma_sim, alpha_sim);
      r = subtrac_vec( &mut b, domain_spec, &mut ax);
      p = r.clone();
-     delta_solve = scalar_product_itself(&mut r, &mut domain_spec );
+     delta_solve = scalar_product_itself(&mut r, domain_spec );
      let gamma_zero = delta_solve;
      for _n in 0..10{
         z = multiply_by_a_matrix(&mut p, domain_spec,alpha_sim, gamma_sim);
@@ -187,11 +187,11 @@ fn conjugate_gradiant( c_array:  Option<Vec<f32>>, gamma_sim: f32,  alpha_sim: f
         r = subtrac_vec(&mut r,  domain_spec, &mut tmp);
         gamma_solve = scalar_product_itself(&mut r, domain_spec);
         println!("{}", gamma_solve/gamma_zero);
-        let distance = scalar_product_itself(&mut r, &mut domain_spec);
+        let distance = scalar_product_itself(&mut r,  domain_spec);
 
         beta_solve = gamma_solve/delta_solve;
-        tmp = multiply_by_scalar_vec(&mut p, &mut domain_spec, beta_solve);
-        p = subtrac_vec(&mut r, &mut domain_spec, &mut tmp);
+        tmp = multiply_by_scalar_vec(&mut p,  domain_spec, beta_solve);
+        p = subtrac_vec(&mut r, domain_spec, &mut tmp);
         delta_solve = gamma_solve;
         //pretty_print_vec(&mut u);
     }
@@ -245,9 +245,7 @@ fn main()-> Result<(), String> {
 
     for i in 0..A{
         for j in 0..C{
-            domain_spec[i+1][j+1] =
-internal_detection(i.try_into().unwrap(), j.try_into().unwrap(),
-a_int,b_int,c_int,d_int);
+            domain_spec[i+1][j+1] = internal_detection(i.try_into().unwrap(), j.try_into().unwrap(), a_int,b_int,c_int,d_int);
             u[i+1][j+1] = rng.gen::<f32>()*50.1;
         }
        // println!("{:?}",domain_spec[i]);
