@@ -285,14 +285,14 @@ fn conjugate_gradiant(gamma_sim: f32,  alpha_sim: f32 ,
      u
 }
 
-fn change_control_array( adjoint_matrix:  Vec<Vec<f32>>,  domain:  Vec<Vec<i32>>, c_array: &mut Vec<f32>) -> Vec<f32>{
+fn change_control_array( adjoint_matrix:  Vec<Vec<f32>>,  domain:  Vec<Vec<i32>>, c_array: &mut Vec<f32>, alpha: f32, eps: f32) -> Vec<f32>{
     let mut result = vec![25.0;c_array.len()];
     for i in 0..adjoint_matrix.len(){
         for j in 0..adjoint_matrix[0].len(){
             if domain[i][j] != -1{
                 if domain[i][j] != -2{   
                     let index: usize = domain[i][j] as usize;
-                    result[index]= c_array[index]+ 1.0*adjoint_matrix[i][j];
+                    result[index]= c_array[index]+ alpha*eps*adjoint_matrix[i][j];
                     }
             }
         
@@ -409,9 +409,15 @@ fn main()-> Result<(), String> {
         }
         for i in 0..control_array[k].len(){
             let grayscale = ((control_array[k][i])) as u8;
+            canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
+            if i < (A-2*B){            
+                canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), max_y+50, pixel_size , pixel_size ));
+            }else{
+                canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), max_y+100, pixel_size , pixel_size ));
+
+            }
             //println!("{}", 2*(i as i32));
-             canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
-             canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), max_y+50, pixel_size , pixel_size ));
+
              
 
         }
@@ -429,7 +435,7 @@ fn main()-> Result<(), String> {
     for k in 0..control_array.len(){
         let max_ind = control_array.len();
         u_star = conjugate_gradiant(adjoint_gamma, alpha_sim_par, u_star, &mut domain_spec, multiply_by_a_matrix_star, compute_b_star, None);
-        control_array[n_time_steps-k-1] = change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[max_ind-1-k])
+        control_array[n_time_steps-k-1] = change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[max_ind-1-k], beta, 0.01);
     }
     println!("{}", scalar_product_itself( &mut u_star, &mut  domain_spec));
 }
