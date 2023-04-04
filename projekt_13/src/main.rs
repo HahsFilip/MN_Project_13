@@ -1,5 +1,6 @@
 use rand::Rng;
 extern crate sdl2;
+use ordered_float::NotNan;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -407,9 +408,28 @@ fn main()-> Result<(), String> {
             }
 
         }
+        let mut max_temp = control_array[0][0];
+        let mut min_temp = control_array[0][0];
+        for range_finder in 0.. control_array.len(){
+            for range_finder_2 in 0.. control_array[range_finder].len(){
+                if max_temp < control_array[range_finder][range_finder_2]{
+                    max_temp = control_array[range_finder][range_finder_2];
+                }
+                if min_temp> control_array[range_finder][range_finder_2]{
+                    min_temp = control_array[range_finder][range_finder_2];
+                }
+
+            }
+         
+        
+        }
+        let d_t = max_temp - min_temp;
+        let scale = 200.0/d_t;
         for i in 0..control_array[k].len(){
-            let grayscale = ((control_array[k][i])) as u8;
-            canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
+           // println!("{}", d_t);
+            let grayscale = ((control_array[k][i]-min_temp)*scale) as u8;
+            //println!("{}", grayscale);
+            canvas.set_draw_color(Color::RGB(grayscale,grayscale, grayscale));
             if i < (A-2*B){            
                 canvas.fill_rect(Rect::new((pixel_size as i32)*((i +B +1)as i32),0 , pixel_size , pixel_size ));
             }else{
