@@ -339,7 +339,7 @@ fn main()-> Result<(), String> {
     let mut residual = 0.0;
     let mut buffer = File::create("foo.csv")
     .expect("Error encountered while creating file!");
-    //buffer.write_all(b"Hi, Welcome to Rust Programming!");
+    
     write!(buffer, "x coord, y coord, z coord, scalar\n");
 
     let mut domain_spec= vec![vec![-1; C+2]; A+2];
@@ -475,12 +475,12 @@ fn main()-> Result<(), String> {
     let mut u_star = vec![vec![goal; C+2]; A+2];
     u_star = subtrac_vec(&mut u_star,&mut domain_spec, &mut u);
     //pretty_print_vec(&mut u_star);
-    
+    let mut eps = 1.1;
    // pretty_print_vec(&mut control_array);
     for k in 0..control_array.len(){
         let max_ind = control_array.len();
         u_star = conjugate_gradiant(adjoint_gamma, alpha_sim_par, u_star, &mut domain_spec, multiply_by_a_matrix_star, compute_b_star, None);
-        control_array[n_time_steps-k-1] = change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[max_ind-1-k], beta, 1.1);
+        control_array[n_time_steps-k-1] = change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[max_ind-1-k], beta, eps);
     }
     if start_flag{
         start_flag = false;
@@ -488,11 +488,15 @@ fn main()-> Result<(), String> {
        // println!("{}", residual);
         
     }else{
-        println!("{}", 1.0 -scalar_product_itself( &mut u_star, &mut  domain_spec)/residual );
+        let tmp_res = scalar_product_itself( &mut u_star, &mut  domain_spec)/residual;
+        println!("{}", 1.0 -tmp_res );
         
-        if 1.0- scalar_product_itself( &mut u_star, &mut  domain_spec)/residual  < 0.005{
+        if 1.0- tmp_res  < 0.00005 && 1.0- tmp_res >0.0{
           
             break;
+        }
+        if 1.0- tmp_res <0.0{
+            eps = eps/2.0;
         }
         residual = scalar_product_itself( &mut u_star, &mut  domain_spec);
 
