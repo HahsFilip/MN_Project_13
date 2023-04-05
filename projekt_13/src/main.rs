@@ -337,10 +337,10 @@ fn main()-> Result<(), String> {
     let d_int: i32 = D.try_into().unwrap();
     let mut start_flag = true;
     let mut residual = 0.0;
-    let mut buffer = File::create("foo.txt")
+    let mut buffer = File::create("foo.csv")
     .expect("Error encountered while creating file!");
     //buffer.write_all(b"Hi, Welcome to Rust Programming!");
-    write!(buffer, "x coord, y coord, scalar");
+    write!(buffer, "x coord, y coord, z coord, scalar\n");
 
     let mut domain_spec= vec![vec![-1; C+2]; A+2];
     let mut rng = rand::thread_rng();
@@ -490,7 +490,7 @@ fn main()-> Result<(), String> {
     }else{
         println!("{}", 1.0 -scalar_product_itself( &mut u_star, &mut  domain_spec)/residual );
         
-        if 1.0- scalar_product_itself( &mut u_star, &mut  domain_spec)/residual  < 0.001{
+        if 1.0- scalar_product_itself( &mut u_star, &mut  domain_spec)/residual  < 0.005{
           
             break;
         }
@@ -501,7 +501,7 @@ fn main()-> Result<(), String> {
 }
 for range_finder in 0.. control_array.len(){
     for range_finder_2 in 0.. control_array[range_finder].len(){
-        write!(buffer, "{},  {},  {}", range_finder, range_finder_2, control_array[range_finder][range_finder_2]);
+        write!(buffer, "{}, {}, 0, {}\n", range_finder, range_finder_2, control_array[range_finder][range_finder_2]);
 
     }
 }
