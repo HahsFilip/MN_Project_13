@@ -9,7 +9,8 @@ use sdl2::rect::Rect;
 //use colors_transform::{Hsl, Color};
 use colors_transform::Color as OtherColor;
 use std::{thread, time};
-
+use std::fs::File;
+use std::io::prelude::*;
 
 fn internal_detection(i: i32, j: i32, a: i32, b:i32, c:i32, d:i32) -> i32 {
    if (j < d-1 && i < b) || (j < d-1 && i >= a - b){
@@ -309,7 +310,7 @@ fn main()-> Result<(), String> {
     let n_time_steps = 100;
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
-
+    let stop_criterion = 1e-6;
     let window = video_subsystem
         .window("rust-sdl2 demo: Video", 800, 600)
         .position_centered()
@@ -334,7 +335,12 @@ fn main()-> Result<(), String> {
     let b_int: i32 = B.try_into().unwrap();
     let c_int: i32 = C.try_into().unwrap();
     let d_int: i32 = D.try_into().unwrap();
-
+    let mut start_flag = true;
+    let mut residual = 0.0;
+    let mut buffer = File::create("foo.txt")
+    .expect("Error encountered while creating file!");
+    //buffer.write_all(b"Hi, Welcome to Rust Programming!");
+    write!(buffer, "x coord, y coord, scalar");
 
     let mut domain_spec= vec![vec![-1; C+2]; A+2];
     let mut rng = rand::thread_rng();
@@ -388,10 +394,11 @@ fn main()-> Result<(), String> {
         }
     }
 {
+
     let pixel_size: u32 = 10;
     let max_x: i32 = (pixel_size as i32)*(u.len() as i32);
     let max_y: i32 =(pixel_size as i32)*(u[0].len() as i32);
-
+  
     for range_finder in 0.. u.len(){
         for range_finder_2 in 0.. u[range_finder].len(){
             if domain_spec[range_finder][range_finder_2] != -1{
@@ -475,7 +482,28 @@ fn main()-> Result<(), String> {
         u_star = conjugate_gradiant(adjoint_gamma, alpha_sim_par, u_star, &mut domain_spec, multiply_by_a_matrix_star, compute_b_star, None);
         control_array[n_time_steps-k-1] = change_control_array(u_star.clone(), domain_spec.clone(), &mut control_array[max_ind-1-k], beta, 1.1);
     }
-    println!("{}", scalar_product_itself( &mut u_star, &mut  domain_spec));
+    if start_flag{
+        start_flag = false;
+        residual = scalar_product_itself( &mut u_star, &mut  domain_spec);
+       // println!("{}", residual);
+        
+    }else{
+        println!("{}", 1.0 -scalar_product_itself( &mut u_star, &mut  domain_spec)/residual );
+        
+        if 1.0- scalar_product_itself( &mut u_star, &mut  domain_spec)/residual  < 0.001{
+          
+            break;
+        }
+        residual = scalar_product_itself( &mut u_star, &mut  domain_spec);
+
+    }
+   // println!("{}", scalar_product_itself( &mut u_star, &mut  domain_spec));
+}
+for range_finder in 0.. control_array.len(){
+    for range_finder_2 in 0.. control_array[range_finder].len(){
+        write!(buffer, "{},  {},  {}", range_finder, range_finder_2, control_array[range_finder][range_finder_2]);
+
+    }
 }
     Ok(())
 }
