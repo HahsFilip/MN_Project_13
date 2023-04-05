@@ -365,6 +365,8 @@ fn main()-> Result<(), String> {
     println!("-------------------\n");
 
     for l in 0..500000-1{
+        let mut  max_temp_domain = goal;
+        let mut  min_temp_domain = goal;
         u = u_backup.clone();
  //   pretty_print_vec(&mut b);
     'running: for k in 0..n_time_steps{
@@ -390,8 +392,7 @@ fn main()-> Result<(), String> {
     let pixel_size: u32 = 10;
     let max_x: i32 = (pixel_size as i32)*(u.len() as i32);
     let max_y: i32 =(pixel_size as i32)*(u[0].len() as i32);
-    let mut  max_temp_domain = goal;
-    let mut  min_temp_domain = goal;
+
     for range_finder in 0.. u.len(){
         for range_finder_2 in 0.. u[range_finder].len(){
             if domain_spec[range_finder][range_finder_2] != -1{
