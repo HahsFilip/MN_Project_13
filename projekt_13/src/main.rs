@@ -349,9 +349,9 @@ fn main()-> Result<(), String> {
         for j in 0..C{
             domain_spec[i+1][j+1] = internal_detection(i.try_into().unwrap(), j.try_into().unwrap(), a_int,b_int,c_int,d_int);
             u[i+1][j+1] = rng.gen::<f32>()*50.1;
-             if (i as i32 -20).abs() < 3{
-                 u[i+1][j+1]= 100.0;
-             }
+           //  if (i as i32 -20).abs() < 3{
+           //      u[i+1][j+1]= 100.0;
+          //   }
         }
        // println!("{:?}",domain_spec[i]);
     }
@@ -379,7 +379,7 @@ fn main()-> Result<(), String> {
        for event in event_pump.poll_iter() {
         match event {
             Event::Quit { .. }
-            | Event::KeyDown {
+            | Event::KeyDown     {
                 keycode: Some(Keycode::Escape),
                 ..
             } => break 'running,
@@ -390,15 +390,32 @@ fn main()-> Result<(), String> {
     let pixel_size: u32 = 10;
     let max_x: i32 = (pixel_size as i32)*(u.len() as i32);
     let max_y: i32 =(pixel_size as i32)*(u[0].len() as i32);
+    let mut  max_temp_domain = goal;
+    let mut  min_temp_domain = goal;
+    for range_finder in 0.. u.len(){
+        for range_finder_2 in 0.. u[range_finder].len(){
+            if domain_spec[range_finder][range_finder_2] != -1{
+                if max_temp_domain < u[range_finder][range_finder_2]{
+                    max_temp_domain = u[range_finder][range_finder_2];
+                }
+                if min_temp_domain> u[range_finder][range_finder_2]{
+                    min_temp_domain = u[range_finder][range_finder_2];
+                }
+            }
+   
 
+        }
+    }
+    let d_t_domain = max_temp_domain - min_temp_domain;
+    let scale_domain = 350.0/d_t_domain;
     for i in 0..u.len(){
 
             for j in 0..u[0].len(){
 
                 if domain_spec[i][j]!=-1{
 
-                    let grayscale = u[i][j] as u8;
-                    let hex_color = colors_transform::Hsl::from((100-grayscale).into(), 100.0, 50.0);
+                    let grayscale = ((u[i][j] -  min_temp_domain)*scale_domain) as u16;
+                    let hex_color = colors_transform::Hsl::from((360-grayscale).into(), 100.0, 50.0);
                     let rgb = hex_color.to_rgb();
                     //println!("{}", 2*(i as i32))
                     canvas.set_draw_color(Color::RGB(rgb.get_red() as u8,rgb.get_green() as u8,rgb.get_blue() as u8));
@@ -410,9 +427,27 @@ fn main()-> Result<(), String> {
             }
 
         }
+        let mut max_temp = control_array[0][0];
+        let mut min_temp = control_array[0][0];
+        for range_finder in 0.. control_array.len(){
+            for range_finder_2 in 0.. control_array[range_finder].len(){
+                if max_temp < control_array[range_finder][range_finder_2]{
+                    max_temp = control_array[range_finder][range_finder_2];
+                }
+                if min_temp> control_array[range_finder][range_finder_2]{
+                    min_temp = control_array[range_finder][range_finder_2];
+                }
+
+            }
+        }
+        let d_t = max_temp - min_temp;
+        let scale = 200.0/d_t;
         for i in 0..control_array[k].len(){
-            let grayscale = ((control_array[k][i])) as u8;
-            canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
+           // println!("{}", d_t);
+            let grayscale = ((control_array[k][i]-min_temp)*scale) as u8;
+            //println!("{}", grayscale);
+            canvas.set_draw_color(Color::RGB(grayscale,grayscale, grayscale));
+   
             if i < (A-2*B){            
                 canvas.fill_rect(Rect::new((pixel_size as i32)*((i +B +1)as i32),0 , pixel_size , pixel_size ));
             }else{
