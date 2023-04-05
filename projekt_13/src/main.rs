@@ -326,10 +326,10 @@ fn main()-> Result<(), String> {
     canvas.present();
 
 
-    const A: usize = 40;
-    const B: usize = 10;
-    const C: usize = 30;
-    const D: usize = 16;
+    const A: usize = 20;
+    const B: usize = 5;
+    const C: usize = 15;
+    const D: usize = 8;
     let a_int: i32 = A.try_into().unwrap();
     let b_int: i32 = B.try_into().unwrap();
     let c_int: i32 = C.try_into().unwrap();
@@ -357,7 +357,8 @@ fn main()-> Result<(), String> {
     }
     let goal = average_of_vec(u.clone(), domain_spec.clone());
     let mut control_array = vec![vec![goal; 2*A-2*B];n_time_steps];
-
+    let mut  max_temp_domain = goal;
+    let mut  min_temp_domain = goal;
     u_backup = u.clone();
  //   pretty_print_int(&mut domain_spec );
    
@@ -365,8 +366,6 @@ fn main()-> Result<(), String> {
     println!("-------------------\n");
 
     for l in 0..500000-1{
-        let mut  max_temp_domain = goal;
-        let mut  min_temp_domain = goal;
         u = u_backup.clone();
  //   pretty_print_vec(&mut b);
     'running: for k in 0..n_time_steps{
