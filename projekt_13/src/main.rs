@@ -1,13 +1,13 @@
 use rand::Rng;
 extern crate sdl2;
-use ordered_float::NotNan;
-
+use colors_transform;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
-
-
+//use colors_transform::Color;
+//use colors_transform::{Hsl, Color};
+use colors_transform::Color as OtherColor;
 use std::{thread, time};
 
 
@@ -398,8 +398,10 @@ fn main()-> Result<(), String> {
                 if domain_spec[i][j]!=-1{
 
                     let grayscale = u[i][j] as u8;
-                   //println!("{}", 2*(i as i32));
-                    canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
+                    let hex_color = colors_transform::Hsl::from((100-grayscale).into(), 100.0, 50.0);
+                    let rgb = hex_color.to_rgb();
+                    //println!("{}", 2*(i as i32))
+                    canvas.set_draw_color(Color::RGB(rgb.get_red() as u8,rgb.get_green() as u8,rgb.get_blue() as u8));
                     canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32), (pixel_size as i32)*(j as i32)+pixel_size as i32, pixel_size , pixel_size) );
                     
                 
@@ -408,28 +410,9 @@ fn main()-> Result<(), String> {
             }
 
         }
-        let mut max_temp = control_array[0][0];
-        let mut min_temp = control_array[0][0];
-        for range_finder in 0.. control_array.len(){
-            for range_finder_2 in 0.. control_array[range_finder].len(){
-                if max_temp < control_array[range_finder][range_finder_2]{
-                    max_temp = control_array[range_finder][range_finder_2];
-                }
-                if min_temp> control_array[range_finder][range_finder_2]{
-                    min_temp = control_array[range_finder][range_finder_2];
-                }
-
-            }
-         
-        
-        }
-        let d_t = max_temp - min_temp;
-        let scale = 200.0/d_t;
         for i in 0..control_array[k].len(){
-           // println!("{}", d_t);
-            let grayscale = ((control_array[k][i]-min_temp)*scale) as u8;
-            //println!("{}", grayscale);
-            canvas.set_draw_color(Color::RGB(grayscale,grayscale, grayscale));
+            let grayscale = ((control_array[k][i])) as u8;
+            canvas.set_draw_color(Color::RGB(2*grayscale,2*grayscale, 2*grayscale));
             if i < (A-2*B){            
                 canvas.fill_rect(Rect::new((pixel_size as i32)*((i +B +1)as i32),0 , pixel_size , pixel_size ));
             }else{

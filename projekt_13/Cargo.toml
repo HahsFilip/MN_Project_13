@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 array2d = "0.3.0"
 rand = "0.8.4"
-
+colors-transform = "0.2.11"
 sdl2 = "0.32.1"
