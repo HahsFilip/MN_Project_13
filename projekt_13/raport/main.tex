@@ -97,5 +97,42 @@ Następnie, skorzystano z drugiego twierdzenia Greena, aby uwolnić  $\delta u$ 
 	=\int_{\Omega}\Delta\delta u \cdot u_* d\Omega = \int_{\Omega}\Delta u_*\cdot \delta u d \Omega &+ \int_{\partial\Omega}\delta(\frac{du}{dn})u_* dS - \int_{\partial\Omega}\frac{du_*}{dn}\delta u dS=\\
 	=\int_{\Omega}\Delta u_*\cdot \delta u d\Omega &+ \int_{\Gamma_2}\frac{\beta}{D}(\delta c - \delta u)u_*dS - \int_{\partial\Omega}\frac{du_*}{\partial n}\delta u dS
 \end{align*}
-
+Następnie zastosowano przekształcenie:
+\begin{align*}
+	\int_{0}^{T}\int_{\Omega}\partial_t\delta u \cdot u_* d\Omega dt = \int_{\Omega}[\int_{0}^{T}\partial_t(u_*\delta u)dt - \int_{0}^{T}\partial_t u_* \delta u dt]=\\
+	=\int_{\Omega}[u_*(T)\delta u(T)-u_*(0)\delta u(0)]d\Omega + \int_{0}^{T}\int_{\Omega}(-\partial_t u_*)\delta u d\Omega dt
+\end{align*}
+Następnie podstawiono:
+\begin{align*}
+	\delta \hat{J} =& \int_{0}^{T}\int_{\Omega}[-\partial_t u_*-D\Delta u_*]\delta u d\Omega dt - \int_{0}^{T}\int_{\Gamma_2}\beta u_*\delta c dSdt- \\
+	&-\int_{0}^{T}\int_{\Gamma_2}(\frac{du_*}{dn}+\beta u_x)\delta u dSdt - \int_{0}^{T}\int_{\Gamma_1}\frac{du_*}{dn}\delta u dSdt+\\
+	&+ \int_{\Omega}[u_*(T)+u(T)-V]\delta u(T)d\Omega
+\end{align*}
+Następnie wybrano funkcję $u_*$, tak aby wyrażenie na $\delta\hat{J}$ nie zawierało wyrażeń $\delta u \;\text{i}\; \delta u(T)$. Zrobiono tak, aby obliczenie $\hat{J}$ wymagało jedynie obliczenia $\delta c$. Jest to podstawowa idea metody gradientów sprzężonych.
+Funkcja $u_*$ ma postać:
+\begin{align*}
+	\begin{cases}
+		-\partial_t u_* = D\Delta u_* \;\text{w}\; \Omega \\
+		\frac{du_*}{dn} + \beta u_* = 0 \; \text{na} \; \Gamma_2\\
+		\frac{du_*}{dn} = 0 \; \text{na} \; \Gamma_1\\
+	\end{cases}
+\end{align*}
+Funkcja ta ma warunek \textbf{końcowy}:
+\begin{align*}
+	u_*(T) = V - u(T)
+\end{align*}
+Całkowanie funkcji $u_*$ odbywa się \textbf{wstecz w czasie}.
+Po obliczeniu $u_*(T)$ w $\Omega$ na przedziale $[0, T]$ można wyznaczyć:
+\begin{align*}
+	\frac{D\hat{J}}{Dc} = -\beta u_*
+\end{align*}
+\section{Implementacja programu}
+\subsection{Ogólny schemat programu}
+Na poniższym schemacie przedstawiono działanie programu "z lotu ptaka", przedstawiając ogólny przepływ danych. $\epsilon$ oznacza małą, dodatnią liczbę.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width = 0.55\textwidth]{main_chart.png}
+\end{figure}
+\subsection{Dyskretyzacja przestrzeni}
+W programmie wykorzystano równomiernie rozłożoną siatkę różnicową.
 \end{document}
