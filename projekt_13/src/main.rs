@@ -302,12 +302,36 @@ fn change_control_array( adjoint_matrix:  Vec<Vec<f32>>,  domain:  Vec<Vec<i32>>
 }
 result
 }
+// fn screen_shot(can: sdl2::render::Canvas , name: String ){
+//     let pixel_format = can.default_pixel_format();
+//     let mut pixels = can.read_pixels(can.viewport(), pixel_format).unwrap();
+//     let (width, height) = can.output_size().unwrap();
+//     let pitch = pixel_format.byte_size_of_pixels(width as usize);
+//     let surf = sdl2::surface::Surface::from_data(pixels.as_mut_slice(), width, height, pitch as u32, pixel_format).unwrap();
+//     surf.save_bmp(name);
+    
+// }
+
+macro_rules! screen_shot {
+    // This macro takes an expression of type `expr` and prints
+    // it as a string along with its result.
+    // The `expr` designator is used for expressions.
+    ($expression:expr, $file_name:expr) => {
+        // `stringify!` will convert the expression *as it is* into a string.
+     let pixel_format = $expression.default_pixel_format();
+     let mut pixels = $expression.read_pixels($expression.viewport(), pixel_format).unwrap();
+     let (width, height) = $expression.output_size().unwrap();
+     let pitch = pixel_format.byte_size_of_pixels(width as usize);
+     let surf = sdl2::surface::Surface::from_data(pixels.as_mut_slice(), width, height, pitch as u32, pixel_format).unwrap();
+     surf.save_bmp($file_name);
+    };
+}
 fn main()-> Result<(), String> {
     let diffusivity = 10.0;
     let h = 1.0;
     let beta = 10.0;
     let dt = 0.010;
-    let n_time_steps = 100;
+    let n_time_steps = 10;
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
     let stop_criterion = 1e-6;
@@ -327,10 +351,10 @@ fn main()-> Result<(), String> {
     canvas.present();
 
 
-    const A: usize = 20;
-    const B: usize = 5;
-    const C: usize = 15;
-    const D: usize = 8;
+    const A: usize = 40;
+    const B: usize = 10;
+    const C: usize = 30;
+    const D: usize = 16;
     let a_int: i32 = A.try_into().unwrap();
     let b_int: i32 = B.try_into().unwrap();
     let c_int: i32 = C.try_into().unwrap();
@@ -355,9 +379,11 @@ fn main()-> Result<(), String> {
         for j in 0..C{
             domain_spec[i+1][j+1] = internal_detection(i.try_into().unwrap(), j.try_into().unwrap(), a_int,b_int,c_int,d_int);
             u[i+1][j+1] = rng.gen::<f32>()*50.1;
-           //  if (i as i32 -20).abs() < 3{
-           //      u[i+1][j+1]= 100.0;
-          //   }
+              if (i as i32 -((A/2) as i32)).abs() < 3{
+                  u[i+1][j+1]= 100.0;
+             }else{
+                 u[i+1][j+1]= 0.0;
+             }
         }
        // println!("{:?}",domain_spec[i]);
     }
@@ -370,10 +396,11 @@ fn main()-> Result<(), String> {
    
    // pretty_print_vec(&mut p);
     println!("-------------------\n");
-
+    let mut first_photo = true;
     for l in 0..500000-1{
         u = u_backup.clone();
- //   pretty_print_vec(&mut b);
+ 
+        //   pretty_print_vec(&mut b);
     'running: for k in 0..n_time_steps{
         let ten_millis = time::Duration::from_millis(100);
         //std::thread::sleep(ten_millis);
@@ -395,7 +422,7 @@ fn main()-> Result<(), String> {
     }
 {
 
-    let pixel_size: u32 = 10;
+    let pixel_size: u32 = 15;
     let max_x: i32 = (pixel_size as i32)*(u.len() as i32);
     let max_y: i32 =(pixel_size as i32)*(u[0].len() as i32);
   
@@ -414,7 +441,7 @@ fn main()-> Result<(), String> {
         }
     }
     let d_t_domain = max_temp_domain - min_temp_domain;
-    let scale_domain = 350.0/d_t_domain;
+    let scale_domain = 100.0/d_t_domain;
     for i in 0..u.len(){
 
             for j in 0..u[0].len(){
@@ -433,6 +460,10 @@ fn main()-> Result<(), String> {
 
             }
 
+        }
+        if first_photo{
+            screen_shot!(canvas, "start_point.bmp");
+            first_photo = false;
         }
         let mut max_temp = control_array[0][0];
         let mut min_temp = control_array[0][0];
@@ -456,9 +487,9 @@ fn main()-> Result<(), String> {
             canvas.set_draw_color(Color::RGB(grayscale,grayscale, grayscale));
    
             if i < (A-2*B){            
-                canvas.fill_rect(Rect::new((pixel_size as i32)*((i +B +1)as i32),0 , pixel_size , pixel_size ));
+               // canvas.fill_rect(Rect::new((pixel_size as i32)*((i +B +1)as i32),0 , pixel_size , pixel_size ));
             }else{
-                canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32 - (A-2*B -1 )  as i32),max_y+pixel_size as i32, pixel_size , pixel_size ));
+                //canvas.fill_rect(Rect::new((pixel_size as i32)*(i as i32 - (A-2*B -1 )  as i32),max_y+pixel_size as i32, pixel_size , pixel_size ));
 
             }
             //println!("{}", 2*(i as i32));
@@ -486,13 +517,14 @@ fn main()-> Result<(), String> {
         start_flag = false;
         residual = scalar_product_itself( &mut u_star, &mut  domain_spec);
        // println!("{}", residual);
+       screen_shot!(canvas, "start_end_point.bmp");
         
     }else{
         let tmp_res = scalar_product_itself( &mut u_star, &mut  domain_spec)/residual;
         println!("{}", 1.0 -tmp_res );
         
         if 1.0- tmp_res  < 0.00005 && 1.0- tmp_res >0.0{
-          
+            screen_shot!(canvas, "end_end_point.bmp");
             break;
         }
         if 1.0- tmp_res <0.0{
