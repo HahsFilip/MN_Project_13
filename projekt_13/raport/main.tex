@@ -70,6 +70,32 @@ gdzie:
 \begin{align*}
 	&D \text{ - to dyfuzyjność (przewodność cieplna)}\\
 	&\beta \text{ - to współczynnik przyjmowania ciepła na brzegu}\\
-	&c \text{ - to temperatura zewnętrzna - zmienna sterowana}
-\end{align*}	
+	&c \text{ - to temperatura zewnętrzna, czyli zmienna sterowana}
+\end{align*}.
+W chwili początkowej:
+\begin{align*}
+	u(x,y, 0) = u_0(x,y)
+\end{align*}
+Program ma zadanie minimalizować funkcję celu, zadaną wzorem:
+\begin{align*}
+	J=\int_{\Omega}[u(\textbf{x},T)-V]^2d\Omega
+\end{align*}
+gdzie $V$ to zadana wartość średniej temperatury, $T$ to koniec przedziału czasowego a \textbf{x} to położenie wewnątrz domeny.
+\section{Wprowadzenie teoretyczne}
+Metoda "adjoint", czyli gradientu sprzężonego polega na znalezieniu funkcji $u_*$, która reprezentuje wpływ sterowania na wartość funkcji celu. Aby znaleźć tą funkcję wyprowadzono potencjał rozszerzony:
+\begin{align*}
+	\hat{J} = \int_{\Omega}[u(\textbf{x},T)-V]^2d\Omega + \int_{0}^{T}\int_\Omega(	\frac{\partial u}{\partial t}-D\Delta u)u_* d\Omega dt
+\end{align*}
+Na tym etapie $u_*$ jest dowolną funkcją. Kolejnym krokiem jest wykorzystanie rachunku wariacyjnego, aby obliczyć wariancję funkcjonału rozszerzonego ze względu na mała zmianę rozwiązania $\delta u$, czyli przyrost $\hat{J}(u+\delta u) - \hat{J}(u)$
+\begin{align*}
+	\delta\hat{J} = \int_{\Omega}[u(T)-V]\delta u(T)d\Omega + \int_{0}^T\int_{\Omega}(	\frac{\partial u}{\partial t}-D\Delta u)u_*d\Omega dt
+\end{align*}
+Następnie, skorzystano z drugiego twierdzenia Greena, aby uwolnić  $\delta u$ od różniczkowania.
+\begin{align*}
+	\int_{\Omega}\Delta\delta u\cdot u_* - \int_{\Omega}\Delta u_*\cdot\delta u\delta\Omega &= \int_{\partial\Omega}\frac{d}{dn}(\delta u)u_* dS-\int_{\partial\Omega}\frac{d}{dn}u_*\delta u dS\\
+	&\Big\Downarrow\\
+	=\int_{\Omega}\Delta\delta u \cdot u_* d\Omega = \int_{\Omega}\Delta u_*\cdot \delta u d \Omega &+ \int_{\partial\Omega}\delta(\frac{du}{dn})u_* dS - \int_{\partial\Omega}\frac{du_*}{dn}\delta u dS=\\
+	=\int_{\Omega}\Delta u_*\cdot \delta u d\Omega &+ \int_{\Gamma_2}\frac{\beta}{D}(\delta c - \delta u)u_*dS - \int_{\partial\Omega}\frac{du_*}{\partial n}\delta u dS
+\end{align*}
+
 \end{document}
