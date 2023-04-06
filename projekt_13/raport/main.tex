@@ -133,6 +133,36 @@ Na poniższym schemacie przedstawiono działanie programu "z lotu ptaka", przeds
 	\centering
 	\includegraphics[width = 0.55\textwidth]{main_chart.png}
 \end{figure}
-\subsection{Dyskretyzacja przestrzeni}
-W programmie wykorzystano równomiernie rozłożoną siatkę różnicową.
+\subsection{Rozwiązywanie zagadnienia pierwotnego}
+W programie wykorzystano równomiernie rozłożoną siatkę różnicową.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.4\linewidth]{siatka}
+	\label{fig:siatka}
+\end{figure}
+Na takiej siatce równanie różniczkowe wewnątrz $\Omega$ przyjmuje postać:
+\begin{align*}
+	\frac{u_{i,j}^{n+1}- u_{i,j}^n}{\Delta t} &= \frac{D}{h^2}(u_{i-1,j}^{n+1}+u_{i+1,j}^{n+1}+u_{i,j-1}^{n+1}+u_{i,j+1}^{n+1}-4\cdot u_{i,j}^{n+1})\\
+	&\Downarrow\\
+	u_{i,j}^n=& (1+4\alpha)\cdot u_{i,j}^{n+1} - \alpha u_{i-1,j}^{n+1}-\alpha u_{i+1,j}^{n+1}-\alpha u_{i,j-1}^{n+1}-\alpha u_{i,j+1}^{n+1}
+\end{align*}
+gdzie $\alpha = \frac{D\Delta t}{h^2}$.
+\newpage
+\subsubsection{Obsługa warunków brzegowych}
+Zaczęto od rozpatrzenia ściany po lewej stronie, z adiabatycznym warunkiem brzegowym. Wykorzystano w tym celu technikę "węzłów duchów", czyli węzły które leżą za ścianą i pozwalają dyskretyzować pochodną na brzegu domeny obliczeniowej. 
+\begin{align*}
+	\frac{\partial u}{\partial n} &= 0\\
+	\frac{du}{dn}\Big\vert^{n+1}_{(i,j)}&= \frac{u_{i+1,j}^{n+1}-u_{i-1,j}^{n+1}}{2h}\Rightarrow u_{i+1,j}^{n+1}=u_{i-1,j}^{n+1}
+\end{align*}
+Wzór różnicowy w punkcie na krawędzi ma postać:
+\begin{align*}
+		u_{i,j}^n=& (1+4\alpha)\cdot u_{i,j}^{n+1} - \alpha u_{i-1,j}^{n+1}-\alpha u_{i+1,j}^{n+1}-2\cdot\alpha u_{i,j-1}^{n+1}
+\end{align*}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.4\linewidth]{ghost}
+
+	\label{fig:ghost}
+\end{figure}
+Analogicznie sytuacja wygląda na lewej oraz poziomych ścianach.
 \end{document}
