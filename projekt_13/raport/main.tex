@@ -152,7 +152,7 @@ gdzie $\alpha = \frac{D\Delta t}{h^2}$.
 Zaczęto od rozpatrzenia ściany po lewej stronie, z adiabatycznym warunkiem brzegowym. Wykorzystano w tym celu technikę "węzłów duchów", czyli węzły które leżą za ścianą i pozwalają dyskretyzować pochodną na brzegu domeny obliczeniowej. 
 \begin{align*}
 	\frac{\partial u}{\partial n} &= 0\\
-	\frac{du}{dn}\Big\vert^{n+1}_{(i,j)}&= \frac{u_{i+1,j}^{n+1}-u_{i-1,j}^{n+1}}{2h}\Rightarrow u_{i+1,j}^{n+1}=u_{i-1,j}^{n+1}
+	\frac{du}{dn}\Big\vert^{n+1}_{(i,j)}&= \frac{u_{i+1,j}^{n+1}-u_{i-1,j}^{n+1}}{2h} = 0\Rightarrow u_{i+1,j}^{n+1}=u_{i-1,j}^{n+1}
 \end{align*}
 Wzór różnicowy w punkcie na krawędzi ma postać:
 \begin{align*}
@@ -165,4 +165,14 @@ Wzór różnicowy w punkcie na krawędzi ma postać:
 	\label{fig:ghost}
 \end{figure}
 Analogicznie sytuacja wygląda na lewej oraz poziomych ścianach.
+Na ścianach, na których zadawany jest warunek brzegowy poddawany sterowaniu sytuacja wygląda podobnie.
+\begin{align*}
+	\frac{\partial u}{\partial n} &= -\frac{\partial u}{\partial y}\\
+	\frac{du}{dn}\Big\vert^{n+1}_{(i,j)}&= \frac{u_{i,j+1}^{n+1}-u_{i,j-1}^{n+1}}{2h} = 2\cdot h\frac{\beta}{D}(c_{i,j}-u_{i,j}^{n+1})\Rightarrow u_{i,j-1}^{n+1}=u_{i,j-1}^{n+1} + 2\cdot h\frac{\beta}{D}(c_{i,j}-u_{i,j}^{n+1})
+\end{align*}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\linewidth]{ghost_c}
+\end{figure}
+
 \end{document}
